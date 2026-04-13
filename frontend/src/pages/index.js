@@ -94,19 +94,19 @@ export default function Dashboard() {
                 </div>
 
                 <div className="card">
-                  <div className="card-header">👥 Total Tenants</div>
+                  <div className="card-header"> Total Tenants</div>
                   <div className="card-body">
                     <h3 style={{ fontSize: '32px', margin: '10px 0' }}>{tenants.length}</h3>
                     <p className="text-muted">
-                      <span style={{ color: '#28a745' }}>✓ {assignedCount}</span>
+                      <span style={{ color: '#28a745' }}> {assignedCount}</span>
                       {' | '}
-                      <span style={{ color: '#ffc107' }}>○ {unassignedCount}</span>
+                      <span style={{ color: '#ffc107' }}> {unassignedCount}</span>
                     </p>
                   </div>
                 </div>
 
                 <div className="card">
-                  <div className="card-header">🛏️ Occupancy Rate</div>
+                  <div className="card-header"> Occupancy Rate</div>
                   <div className="card-body">
                     {occupancy && occupancy.flat_occupancy && occupancy.flat_occupancy.length > 0 ? (
                       <>
