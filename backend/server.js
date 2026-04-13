@@ -12,15 +12,15 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // CORS Configuration for Vercel Frontend
+const allowedOrigins = [
+  'https://bedr-frontend.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:3001'
+];
+
 app.use(express.json());
 app.use(cors({
   origin: function(origin, callback) {
-    const allowedOrigins = [
-      'https://bedr-frontend.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:3001'
-    ];
-    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
