@@ -2,7 +2,7 @@ const pool = require('../config/database');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
-// CREATE tenant
+
 exports.createTenant = asyncHandler(async (req, res) => {
   const { name, email, phone } = req.body;
 
@@ -21,7 +21,7 @@ exports.createTenant = asyncHandler(async (req, res) => {
   });
 });
 
-// GET all tenants
+
 exports.getAllTenants = asyncHandler(async (req, res) => {
   const result = await pool.query(
     `SELECT t.*, ta.id as assignment_id, ta.bed_id, b.status as bed_status, r.id as room_id, f.id as flat_id
@@ -39,7 +39,7 @@ exports.getAllTenants = asyncHandler(async (req, res) => {
   });
 });
 
-// GET single tenant
+
 exports.getTenantById = asyncHandler(async (req, res) => {
   const result = await pool.query(
     `SELECT t.*, ta.id as assignment_id, ta.bed_id, b.status as bed_status, r.id as room_id, f.id as flat_id
@@ -62,11 +62,11 @@ exports.getTenantById = asyncHandler(async (req, res) => {
   });
 });
 
-// DELETE tenant
+
 exports.deleteTenant = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // Check if tenant has an active bed assignment
+ 
   const assignmentCheck = await pool.query(
     'SELECT * FROM tenant_assignments WHERE tenant_id = $1 AND removed_at IS NULL',
     [id]
@@ -79,7 +79,7 @@ exports.deleteTenant = asyncHandler(async (req, res) => {
     );
   }
 
-  // Check if tenant exists
+ 
   const tenantCheck = await pool.query('SELECT * FROM tenants WHERE id = $1', [id]);
   if (tenantCheck.rows.length === 0) {
     throw new AppError('Tenant not found', 404);
@@ -93,7 +93,7 @@ exports.deleteTenant = asyncHandler(async (req, res) => {
   });
 });
 
-// UPDATE tenant
+
 exports.updateTenant = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, email, phone } = req.body;
@@ -113,7 +113,7 @@ exports.updateTenant = asyncHandler(async (req, res) => {
   });
 });
 
-// ASSIGN tenant to bed
+
 exports.assignTenantToBed = asyncHandler(async (req, res) => {
   const { tenant_id, bed_id } = req.body;
 
@@ -121,13 +121,13 @@ exports.assignTenantToBed = asyncHandler(async (req, res) => {
     throw new AppError('tenant_id and bed_id are required', 400);
   }
 
-  // Check tenant exists
+  
   const tenantCheck = await pool.query('SELECT * FROM tenants WHERE id = $1', [tenant_id]);
   if (tenantCheck.rows.length === 0) {
     throw new AppError('Tenant not found', 404);
   }
 
-  // Check bed exists
+
   const bedCheck = await pool.query('SELECT * FROM beds WHERE id = $1', [bed_id]);
   if (bedCheck.rows.length === 0) {
     throw new AppError('Bed not found', 404);
@@ -135,17 +135,16 @@ exports.assignTenantToBed = asyncHandler(async (req, res) => {
 
   const bed = bedCheck.rows[0];
 
-  // Business Logic: Cannot assign to Under Maintenance bed
+  
   if (bed.status === 'Under Maintenance') {
     throw new AppError('Cannot assign tenant to a bed that is Under Maintenance', 400);
   }
 
-  // Business Logic: Cannot assign to Occupied bed
+  
   if (bed.status === 'Occupied') {
     throw new AppError('Cannot assign tenant to an already Occupied bed', 400);
   }
 
-  // Business Logic: Tenant can only have one active assignment
   const activeTenantAssignment = await pool.query(
     'SELECT * FROM tenant_assignments WHERE tenant_id = $1 AND removed_at IS NULL',
     [tenant_id]
@@ -155,13 +154,12 @@ exports.assignTenantToBed = asyncHandler(async (req, res) => {
     throw new AppError('Tenant already has an active bed assignment', 400);
   }
 
-  // All checks passed - assign tenant and update bed status
+
   const assignmentResult = await pool.query(
     'INSERT INTO tenant_assignments (tenant_id, bed_id) VALUES ($1, $2) RETURNING *',
     [tenant_id, bed_id]
   );
 
-  // Update bed status to Occupied
   await pool.query(
     'UPDATE beds SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
     ['Occupied', bed_id]
@@ -174,11 +172,9 @@ exports.assignTenantToBed = asyncHandler(async (req, res) => {
   });
 });
 
-// REMOVE tenant from bed
 exports.removeTenantFromBed = asyncHandler(async (req, res) => {
   const { assignment_id } = req.params;
 
-  // Check if assignment exists
   const assignmentCheck = await pool.query(
     'SELECT * FROM tenant_assignments WHERE id = $1 AND removed_at IS NULL',
     [assignment_id]
@@ -190,13 +186,12 @@ exports.removeTenantFromBed = asyncHandler(async (req, res) => {
 
   const assignment = assignmentCheck.rows[0];
 
-  // Mark assignment as removed
+ 
   const result = await pool.query(
     'UPDATE tenant_assignments SET removed_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
     [assignment_id]
   );
 
-  // Update bed status back to Available
   await pool.query(
     'UPDATE beds SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
     ['Available', assignment.bed_id]
@@ -209,7 +204,6 @@ exports.removeTenantFromBed = asyncHandler(async (req, res) => {
   });
 });
 
-// REASSIGN tenant to new bed
 exports.reassignTenant = asyncHandler(async (req, res) => {
   const { tenant_id, new_bed_id } = req.body;
 
@@ -217,7 +211,6 @@ exports.reassignTenant = asyncHandler(async (req, res) => {
     throw new AppError('tenant_id and new_bed_id are required', 400);
   }
 
-  // Check new bed exists and get its details
   const newBedCheck = await pool.query('SELECT * FROM beds WHERE id = $1', [new_bed_id]);
   if (newBedCheck.rows.length === 0) {
     throw new AppError('New bed not found', 404);
@@ -225,7 +218,7 @@ exports.reassignTenant = asyncHandler(async (req, res) => {
 
   const newBed = newBedCheck.rows[0];
 
-  // Business Logic checks for new bed
+ 
   if (newBed.status === 'Under Maintenance') {
     throw new AppError('Cannot reassign to a bed that is Under Maintenance', 400);
   }
@@ -234,7 +227,7 @@ exports.reassignTenant = asyncHandler(async (req, res) => {
     throw new AppError('Cannot reassign to an already Occupied bed', 400);
   }
 
-  // Check if tenant has an active assignment
+
   const activeAssignment = await pool.query(
     'SELECT * FROM tenant_assignments WHERE tenant_id = $1 AND removed_at IS NULL',
     [tenant_id]
@@ -247,25 +240,25 @@ exports.reassignTenant = asyncHandler(async (req, res) => {
   const oldAssignment = activeAssignment.rows[0];
   const oldBedId = oldAssignment.bed_id;
 
-  // Remove from old bed
+  
   await pool.query(
     'UPDATE tenant_assignments SET removed_at = CURRENT_TIMESTAMP WHERE id = $1',
     [oldAssignment.id]
   );
 
-  // Mark old bed as Available
+ 
   await pool.query(
     'UPDATE beds SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
     ['Available', oldBedId]
   );
 
-  // Create new assignment
+
   const newAssignment = await pool.query(
     'INSERT INTO tenant_assignments (tenant_id, bed_id) VALUES ($1, $2) RETURNING *',
     [tenant_id, new_bed_id]
   );
 
-  // Mark new bed as Occupied
+  
   await pool.query(
     'UPDATE beds SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
     ['Occupied', new_bed_id]

@@ -1,9 +1,9 @@
 const pool = require('../config/database');
 const asyncHandler = require('../utils/asyncHandler');
 
-// GET occupancy dashboard
+
 exports.getOccupancyDashboard = asyncHandler(async (req, res) => {
-  // Occupancy per flat
+
   const flatOccupancy = await pool.query(
     `SELECT 
       f.id,
@@ -19,7 +19,7 @@ exports.getOccupancyDashboard = asyncHandler(async (req, res) => {
     ORDER BY f.name`
   );
 
-  // Occupancy per room
+
   const roomOccupancy = await pool.query(
     `SELECT 
       r.id,
@@ -36,7 +36,7 @@ exports.getOccupancyDashboard = asyncHandler(async (req, res) => {
     ORDER BY r.flat_id, r.name`
   );
 
-  // Format response with occupancy percentages
+ 
   const flatSummary = flatOccupancy.rows.map(flat => ({
     ...flat,
     total_beds: parseInt(flat.total_beds),

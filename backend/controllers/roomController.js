@@ -2,7 +2,7 @@ const pool = require('../config/database');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
-// CREATE room
+
 exports.createRoom = asyncHandler(async (req, res) => {
   const { flat_id, name, max_bed_capacity } = req.body;
 
@@ -10,7 +10,7 @@ exports.createRoom = asyncHandler(async (req, res) => {
     throw new AppError('flat_id, name, and valid max_bed_capacity are required', 400);
   }
 
-  // Check if flat exists
+ 
   const flatCheck = await pool.query('SELECT * FROM flats WHERE id = $1', [flat_id]);
   if (flatCheck.rows.length === 0) {
     throw new AppError('Flat not found', 404);
@@ -27,7 +27,7 @@ exports.createRoom = asyncHandler(async (req, res) => {
   });
 });
 
-// GET all rooms
+
 exports.getAllRooms = asyncHandler(async (req, res) => {
   const result = await pool.query(
     `SELECT r.*, f.name as flat_name 
@@ -42,11 +42,10 @@ exports.getAllRooms = asyncHandler(async (req, res) => {
   });
 });
 
-// GET all rooms of a flat
+
 exports.getRoomsByFlat = asyncHandler(async (req, res) => {
   const { flat_id } = req.params;
 
-  // Check if flat exists
   const flatCheck = await pool.query('SELECT * FROM flats WHERE id = $1', [flat_id]);
   if (flatCheck.rows.length === 0) {
     throw new AppError('Flat not found', 404);
@@ -63,7 +62,7 @@ exports.getRoomsByFlat = asyncHandler(async (req, res) => {
   });
 });
 
-// GET single room
+
 exports.getRoomById = asyncHandler(async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM rooms WHERE id = $1',
@@ -80,17 +79,16 @@ exports.getRoomById = asyncHandler(async (req, res) => {
   });
 });
 
-// DELETE room
+
 exports.deleteRoom = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // Check if room exists
   const roomCheck = await pool.query('SELECT * FROM rooms WHERE id = $1', [id]);
   if (roomCheck.rows.length === 0) {
     throw new AppError('Room not found', 404);
   }
 
-  // Cascade delete will handle beds and tenant assignments
+  
   await pool.query('DELETE FROM rooms WHERE id = $1', [id]);
 
   res.json({
@@ -99,12 +97,12 @@ exports.deleteRoom = asyncHandler(async (req, res) => {
   });
 });
 
-// UPDATE room
+
 exports.updateRoom = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, max_bed_capacity } = req.body;
 
-  // If capacity is being updated, check current bed count
+ 
   if (max_bed_capacity) {
     const bedCountResult = await pool.query(
       'SELECT COUNT(*) as bed_count FROM beds WHERE room_id = $1',

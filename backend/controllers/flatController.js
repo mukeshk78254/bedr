@@ -2,7 +2,7 @@ const pool = require('../config/database');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 
-// CREATE flat
+
 exports.createFlat = asyncHandler(async (req, res) => {
   const { name, address } = req.body;
 
@@ -21,7 +21,7 @@ exports.createFlat = asyncHandler(async (req, res) => {
   });
 });
 
-// GET all flats
+
 exports.getAllFlats = asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM flats ORDER BY created_at DESC');
   
@@ -31,7 +31,7 @@ exports.getAllFlats = asyncHandler(async (req, res) => {
   });
 });
 
-// GET single flat
+
 exports.getFlatById = asyncHandler(async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM flats WHERE id = $1',
@@ -48,11 +48,11 @@ exports.getFlatById = asyncHandler(async (req, res) => {
   });
 });
 
-// DELETE flat
+
 exports.deleteFlat = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  // Check if flat has any active tenant assignments
+  
   const assignmentCheck = await pool.query(
     `SELECT ta.id FROM tenant_assignments ta
      JOIN beds b ON ta.bed_id = b.id
@@ -68,13 +68,12 @@ exports.deleteFlat = asyncHandler(async (req, res) => {
     );
   }
 
-  // Check if flat exists
   const flatCheck = await pool.query('SELECT * FROM flats WHERE id = $1', [id]);
   if (flatCheck.rows.length === 0) {
     throw new AppError('Flat not found', 404);
   }
 
-  // Delete the flat (cascade will handle rooms, beds, assignments)
+  
   await pool.query('DELETE FROM flats WHERE id = $1', [id]);
 
   res.json({
@@ -83,7 +82,7 @@ exports.deleteFlat = asyncHandler(async (req, res) => {
   });
 });
 
-// UPDATE flat
+
 exports.updateFlat = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, address } = req.body;
