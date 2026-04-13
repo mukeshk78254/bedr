@@ -11,7 +11,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// CORS Configuration for Vercel Frontend
+
 const allowedOrigins = [
   'https://bedr-frontend.vercel.app',
   'http://localhost:3000',
@@ -21,11 +21,11 @@ const allowedOrigins = [
 app.use(express.json());
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+   
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all origins for now
+      callback(null, true);
     }
   },
   credentials: true,
@@ -33,7 +33,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Health check endpoint
+
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running' });
 });
